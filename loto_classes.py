@@ -1,129 +1,93 @@
 import random
 
 
-class LotoException(Exception):
-    def __init__(self, *args):
-        if args:
-            self.message = args[0]
-        else:
-            self.message = None
-
-    def __str__(self):
-        if self.message:
-            return f"LotoException, {self.message}"
-        else:
-            return "LotoException has been raised"
-
-
-class Barrell:
-    def __init__(self, new_number):
+class Barrel:
+    def __init__(self, num):
+        self.number = num
         self.marked = False
-        if isinstance(new_number, int):
-            self.number = new_number
-        else:
-            raise TypeError("Barrel number is not class<int>")
 
-    def set_number(self, new_number):
-        if isinstance(new_number, int):
-            self.number = new_number
-        else:
-            raise TypeError("Barrel number is not class<int>")
-
-    def mark(self):
-        if self.marked:
-            raise LotoException("Barrel already marked")
-        else:
-            self.marked = True
-
+    def __int__(self):
+        return self.number
 
 class LotoBag:
-    def __init__(self, barrel_max=90):
-        self.barrel_index = 0
-        self.barrel_count=barrel_max
-        nums = [i+1 for i in range(0, self.barrel_count)]
-        random.shuffle(nums)
-        self.barrels = [Barrell(i) for i in nums]
-        #print([b.number for b in self.barrels])
+    def __init__(self):
+        self.unmarked_barrels = [i+1 for i in range(0, 90)]
+        self.marked_barrels = []
+        random.shuffle(self.unmarked_barrels)
 
-    def get_next_barrel(self):
-        self.barrel_index += 1
-        self.barrels[self.barrel_index].mark()
-        return self.barrels[self.barrel_index - 1].number
+    def get_next(self):
+        self.marked_barrels.append(self.unmarked_barrels.pop(0))
+        return self.marked_barrels[-1]
 
-    def get_marked_barrels(self):
-        return [b.number for b in self.barrels if b.marked]
+    def reset(self):
+        self.unmarked_barrels = [i+1 for i in range(0, 90)]
+        self.marked_barrels = []
+        random.shuffle(self.unmarked_barrels)
 
-    def shuffle_remaining_barrels(self):
-        marked_barrels = [self.barrels[i] for i in range(0, self.barrel_index)]
-        unmarked_barrels = [self.barrels[i] for i in range(self.barrel_index, len(self.barrels))]
-        random.shuffle(unmarked_barrels)
-        self.barrels = marked_barrels + unmarked_barrels
-
-    def debug_mark_many(self, start=1, end=10):
-        for i in range(start-1, end+1):
-            self.barrels[i].mark()
-
-    def debug_print_all(self):
-        for b in self.barrels:
-            if isinstance(b, Barrell):
-                print(b.number, end=", ")
-            else:
-                raise LotoException("Object type expected: class<Barrel>.  Found: "+str(type(b)))
-        print('\n')
-
-    def debug_print_remains(self):
-        for b in self.barrels:
-            if isinstance(b, Barrell):
-                if b.marked:
-                    print("XX" if b.number > 9 else "X", end=", ")
-                else:
-                    print(b.number, end=", ")
-            else:
-                raise LotoException("Object type expected: class<Barrel>.  Found: "+str(type(b)))
-        print('\n')
 
 
 class LotoCard:
-    def __init__(self, lbag: LotoBag, playername, rl=9, rc=3, fc=5):
-        self.rows_length = rl
-        self.player = playername
-        self.rows_count = rc
-        self.free_cells_count = fc
-        self.lots = [[b for b in lbag.barrels][v] for v in range(0, self.free_cells_count*self.rows_count)]
+    def __init__(self, size=[3, 9, 5]):
         self.rows = []
-        for c in range(0, self.rows_count):
-            self.rows.append(self.lots[c:self.free_cells_count+c]+[0 for i in range(0, self.rows_length-self.free_cells_count)])
-            random.shuffle(self.rows[c])
-        #print(self.lots)
-        #print(self.rows)
+        for rc in range(0,size[0]):
+            self.rows.append([1 for i in range(0, size[2])]+[0 for i in range(0, size[1]-size[2])])
+            random.shuffle(self.rows[rc])
+        self.lots = [[i+1 for i in range(0, 90)][v] for v in range(0, size[0]*size[2])]
+        random.shuffle(self.lots)
 
-    def print(self):
-        print("Карточка игрока: "+self.player)
-        print("---"*self.rows_length)
-        for row in self.rows:
+
+    def print(self, *marked_barrels: int):
+        b_index = 0
+        print("---"*len(self.rows[0]))
+        lot_index = 0
+        if len(marked_barrels) > 0:
+            marked_nums = [b for b in marked_barrels]
+        for r in self.rows:
             line = ""
-            for cell in row:
-                if isinstance(cell, Barrell):
-                    if cell.marked:
-                        line += " X"
+            for cell in r:
+                if cell == 1:
+                    if self.lots[lot_index] in marked_nums:
+                        line += " X "
                     else:
-                        cell = cell.number
-                        if cell < 10:
-                            line += " "+str(cell)
+                        if self.lots[lot_index] < 10:
+                            line += " "+self.lots[lot_index].__str__()+" "
                         else:
-                            line += str(cell)
+                            line += self.lots[lot_index].__str__() + " "
+                    lot_index += 1
                 else:
-                    line += "  "
-                line += " "
+                    line += "   "
             print(line)
-        print("---" * self.rows_length)
+        print("---" * len(self.rows[0]))
 
 
-class LotoPlayer:
-    def __init__(self, name, c_count=1):
-        self.cards_count = c_count
-        self.score = 0
-        self.name = name
+class LotoGameVSBot:
+    def __init__(self, cardsize=[3, 9, 5]):
+        #3 - rows, 9 - row length, 5 - nums in row
+        self.bag = LotoBag()
+        self.playercard = LotoCard()
+        self.botcard = LotoCard()
+        self.playername = ""
+        self.is_game_ended = False
+
+    def start(self):
+        self.playername = input("Введите своё имя: ")
+        while not self.is_game_ended:
+            current_barrel = self.bag.get_next()
+            print("Новый бочонок: "+current_barrel.__str__(), end=" (")
+            print("осталось "+str(len(self.bag.unmarked_barrels))+")")
+            #new barrel printing here
+
+            ###
+            #cards printing here
+            self.playercard.print(self.bag.marked_barrels)
+            self.botcard.print(self.bag.marked_barrels)
+            ###
+            answer = input("Зачеркнуть число? y/n\n")
+            if answer == "y" or answer == "Y":
+                print("Да")
+            elif answer == "n" or answer == "N":
+                print("Нет")
+            else:
+                print("Неправильный ответ")
 
 
-#class LotoGame:
