@@ -8,7 +8,8 @@ def cont():
 def main():
     print(" ")
     lotogame = loto_classes.LotoGameVSBot()
-    lotogame.start()
+    result = lotogame.start()
+    print("Спс за игру")
 
 if __name__ == '__main__':
     main()
