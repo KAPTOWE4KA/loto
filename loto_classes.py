@@ -1,15 +1,5 @@
 import datetime
 import random
-import time
-
-
-class Barrel:
-    def __init__(self, num):
-        self.number = num
-        self.marked = False
-
-    def __int__(self):
-        return self.number
 
 
 class LotoBag:
@@ -24,13 +14,9 @@ class LotoBag:
         else:
             return 0
 
-    def mark_next(self):
-        self.marked_barrels.append(self.unmarked_barrels.pop(0))
-
-    def reset(self):
-        self.unmarked_barrels = [i + 1 for i in range(0, 90)]
-        self.marked_barrels = []
-        random.shuffle(self.unmarked_barrels)
+    def mark_next(self, count=1):
+        for i in range(0, count):
+            self.marked_barrels.append(self.unmarked_barrels.pop(0))
 
 
 def change_seed():
@@ -88,12 +74,14 @@ class LotoGameVSBot:
         self.botcards = [LotoCard() for player in players if player == "bot"]
         self.playernames = [p for p in players if p != "bot"]
 
-    def start(self):
+    def start(self, muted=False):
         if len(self.playercards) == 0:
-            print("В игре должно быть минимум 1 игрок")
+            if not muted:
+                print("В игре должно быть минимум 1 игрок")
             return -1
-        elif (len(self.botcards)+len(self.playercards))<2:
-            print("В игре должно быть минимум 1 игрок и от 0 до 2 ботов")
+        elif (len(self.botcards)+len(self.playercards)) < 2:
+            if not muted:
+                print("В игре должно быть минимум 1 игрок и от 0 до 2 ботов")
             return -1
         while True:
             current_barrel = self.bag.get_next()
@@ -153,6 +141,8 @@ class LotoGameVSBot:
                 else:
                     ###
                     for player_i in range(0, len(self.playernames)):
+                        if player_i >= len(self.playernames):
+                            break
                         print(f"Игрок: {self.playernames[player_i]}")
                         while True:
                             answer = input(f"Зачеркнуть число {current_barrel}? y/n\n")
