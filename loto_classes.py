@@ -19,10 +19,18 @@ class LotoBag:
             self.marked_barrels.append(self.unmarked_barrels.pop(0))
 
     def __str__(self):
-        return [s+' ' for s in self.unmarked_barrels] + [s+' ' for s in self.marked_barrels]
+        line = ""
+        for s in self.unmarked_barrels:
+            line += s+' '
+        for s in self.marked_barrels:
+            line += s+' '
+        return line
 
     def __eq__(self, other):
-        return self.unmarked_barrels == other.unmarked_barrels
+        return sorted(self.unmarked_barrels) == sorted(other.unmarked_barrels)
+
+    def __ne__(self, other):
+        return sorted(self.unmarked_barrels) != sorted(other.unmarked_barrels)
 
     def __gt__(self, other):
         return len(self.unmarked_barrels) > len(other.unmarked_barrels)
@@ -84,10 +92,16 @@ class LotoCard:
         print("---" * len(self.rows[0]))
 
     def __str__(self):
-        return [s+' ' for s in sorted(self.lots)]
+        line = ""
+        for s in sorted(self.lots):
+            line += str(s)+' '
+        return line
 
     def __eq__(self, other):
         return sorted(self.lots) == sorted(other.lots)
+
+    def __ne__(self, other):
+        return sorted(self.lots) != sorted(other.lots)
 
     def __gt__(self, other):
         return len(self.lots) > len(other.lots)
@@ -104,10 +118,16 @@ class LotoCard:
 
 class LotoGameVSBot:
     def __str__(self):
-        return "Players: "+[p+", " for p in self.playernames]
+        line = "Players: "
+        for p in self.playernames:
+            line += p+", "
+        return line
 
     def __eq__(self, other):
         return sorted(self.playernames) == sorted(other.playernames)
+
+    def __ne__(self, other):
+        return sorted(self.playernames) != sorted(other.playernames)
 
     def __gt__(self, other):
         return len(self.playernames) > len(other.playernames)
@@ -134,7 +154,6 @@ class LotoGameVSBot:
     @staticmethod
     def newgame1bot(pname="player"):
         return LotoGameVSBot(players=["bot", pname])
-
 
     def start(self, muted=False):
         if len(self.playercards) == 0:
