@@ -18,6 +18,35 @@ class LotoBag:
         for i in range(0, count):
             self.marked_barrels.append(self.unmarked_barrels.pop(0))
 
+    def __str__(self):
+        line = ""
+        for s in self.unmarked_barrels:
+            line += s+' '
+        for s in self.marked_barrels:
+            line += s+' '
+        return line
+
+    def __eq__(self, other):
+        return sorted(self.unmarked_barrels) == sorted(other.unmarked_barrels)
+
+    def __ne__(self, other):
+        return sorted(self.unmarked_barrels) != sorted(other.unmarked_barrels)
+
+    def __gt__(self, other):
+        return len(self.unmarked_barrels) > len(other.unmarked_barrels)
+
+    def __lt__(self, other):
+        return len(self.unmarked_barrels) < len(other.unmarked_barrels)
+
+    def __ge__(self, other):
+        return len(self.unmarked_barrels) >= len(other.unmarked_barrels)
+
+    def __le__(self, other):
+        return len(self.unmarked_barrels) <= len(other.unmarked_barrels)
+
+    def __len__(self):
+        return len(self.unmarked_barrels)
+
 
 def change_seed():
     random.seed(datetime.datetime.now().microsecond.__int__() - random.randint(0, 999))
@@ -62,8 +91,56 @@ class LotoCard:
             print(line)
         print("---" * len(self.rows[0]))
 
+    def __str__(self):
+        line = ""
+        for s in sorted(self.lots):
+            line += str(s)+' '
+        return line
+
+    def __eq__(self, other):
+        return sorted(self.lots) == sorted(other.lots)
+
+    def __ne__(self, other):
+        return sorted(self.lots) != sorted(other.lots)
+
+    def __gt__(self, other):
+        return len(self.lots) > len(other.lots)
+
+    def __lt__(self, other):
+        return len(self.lots) < len(other.lots)
+
+    def __ge__(self, other):
+        return len(self.lots) >= len(other.lots)
+
+    def __le__(self, other):
+        return len(self.lots) <= len(other.lots)
+
 
 class LotoGameVSBot:
+    def __str__(self):
+        line = "Players: "
+        for p in self.playernames:
+            line += p+", "
+        return line
+
+    def __eq__(self, other):
+        return sorted(self.playernames) == sorted(other.playernames)
+
+    def __ne__(self, other):
+        return sorted(self.playernames) != sorted(other.playernames)
+
+    def __gt__(self, other):
+        return len(self.playernames) > len(other.playernames)
+
+    def __lt__(self, other):
+        return len(self.playernames) < len(other.playernames)
+
+    def __ge__(self, other):
+        return len(self.playernames) >= len(other.playernames)
+
+    def __le__(self, other):
+        return len(self.playernames) <= len(other.playernames)
+
     def __init__(self, players=["bot", "player"], # "bot" = Bot, "BoT" != bot
                  cardsize=[3, 9, 5]):
         change_seed()
@@ -73,6 +150,10 @@ class LotoGameVSBot:
         change_seed()
         self.botcards = [LotoCard() for player in players if player == "bot"]
         self.playernames = [p for p in players if p != "bot"]
+
+    @staticmethod
+    def newgame1bot(pname="player"):
+        return LotoGameVSBot(players=["bot", pname])
 
     def start(self, muted=False):
         if len(self.playercards) == 0:
